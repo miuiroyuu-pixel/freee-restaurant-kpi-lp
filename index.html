@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>月末を待たずに昨日の粗利が見えるLP（飲食店×freee）</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="売上は見ているのに、粗利や原価率は月末まで感覚任せ——そんな飲食店オーナー向けに、freeeを土台にした数字管理とKPIダッシュボード活用を紹介します。">
+  <style>
+    :root {
+      --bg: #f7f6f2;
+      --surface: #ffffff;
+      --border: #e0ddd5;
+      --text: #222222;
+      --muted: #666666;
+      --accent: #01696f;
+      --accent-soft: #e0f1f2;
+      --danger: #a13544;
+      --radius: 10px;
+      --shadow: 0 8px 24px rgba(0,0,0,0.06);
+      --space: 20px;
+      --max-width: 900px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .page {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 16px;
+    }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 0 16px;
+    }
+    .logo {
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .tagline {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .ghost-btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      font-size: 13px;
+      background: #fff;
+      cursor: pointer;
+    }
+    .hero {
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow);
+      margin-bottom: 32px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 24px;
+    }
+    @media (max-width: 768px) {
+      .hero-grid { grid-template-columns: 1fr; }
+    }
+    .hero-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .hero-lead {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 20px;
+    }
+    .hero-ctas {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .btn-primary, .btn-secondary {
+      border-radius: 999px;
+      border: none;
+      padding: 11px 18px;
+      font-size: 14px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    .hero-note {
+      margin-top: 12px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .hero-mock {
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 14px;
+      background: #faf9f7;
+      font-size: 12px;
+    }
+    .hero-mock-title {
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .kpi-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      padding: 4px 0;
+      border-bottom: 1px dashed #e4e1da;
+    }
+    .kpi-row:last-child { border-bottom: none; }
+    section {
+      margin-bottom: 32px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    section h2 {
+      font-size: 18px;
+      margin: 0 0 12px;
+    }
+    section p {
+      font-size: 14px;
+      margin: 0 0 10px;
+    }
+    .checklist {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .checklist li {
+      font-size: 14px;
+      padding-left: 1.4em;
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .checklist li::before {
+      content: "✔";
+      position: absolute;
+      left: 0;
+      top: 2px;
+      font-size: 11px;
+      color: var(--accent);
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+    @media (max-width: 768px) {
+      .two-col { grid-template-columns: 1fr; }
+    }
+    .box-muted {
+      border-radius: var(--radius);
+      border: 1px dashed var(--border);
+      background: #faf9f6;
+      padding: 14px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 8px;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 6px 8px;
+      text-align: left;
+    }
+    th {
+      background: #f0ece5;
+      font-weight: 600;
+    }
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .pill {
+      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #faf9f7;
+    }
+    .cta-block {
+      text-align: center;
+    }
+    .cta-block p { margin-bottom: 16px; }
+    .faq-item {
+      margin-bottom: 16px;
+    }
+    .faq-q {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    .closing {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+      padding: 24px 0 12px;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <header>
+    <div>
+      <div class="logo">飲食×freee KPIダッシュボード</div>
+      <div class="tagline">月末を待たずに、昨日の粗利が見える仕組み</div>
+    </div>
+    <button class="ghost-btn" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">
+      無料で内容を見る
+    </button>
+  </header>
+
+  <main>
+
+    <!-- ① ヒーロー -->
+    <section class="hero">
+      <div class="hero-grid">
+        <div>
+          <h1 class="hero-title">
+            月次締めを待たずに、昨日の粗利と原価率がわかる仕組みを、1回の導入で。
+          </h1>
+          <p class="hero-lead">
+            売上は毎日見ているのに、粗利や原価率は「なんとなく」で月末を迎えていませんか。数字が後からしか分からないのは、管理が甘いからではなく、数字がそろう仕組みがないからです。
+          </p>
+          <p class="hero-lead">
+            freeeを土台にすることで、バラバラだった銀行・カード・売上のデータが一か所にまとまりやすくなります。その先で、売上・粗利・原価率・前週比を日次で確認できるダッシュボードへとつなげていきます。
+          </p>
+          <div class="hero-ctas">
+            <button class="btn-primary">
+              まず、数字がそろう仕組みをつくってみる
+            </button>
+            <button class="btn-secondary">
+              飲食店向けKPIダッシュボードのテンプレを見てみる
+            </button>
+          </div>
+          <div class="hero-note">
+            ※「freee未導入の方」と「freee導入済みの方」でご案内が分かれます。
+          </div>
+        </div>
+        <div class="hero-mock">
+          <div class="hero-mock-title">ダッシュボードのイメージ</div>
+          <div class="kpi-row">
+            <span>昨日の売上</span><span>¥ 325,000</span>
+          </div>
+          <div class="kpi-row">
+            <span>粗利率</span><span>58.2%</span>
+          </div>
+          <div class="kpi-row">
+            <span>原価率</span><span>32.0%（▲2.3pt）</span>
+          </div>
+          <div class="kpi-row">
+            <span>FL率</span><span>62.5%</span>
+          </div>
+          <div class="kpi-row">
+            <span>前週同曜日比</span><span>＋4.8%</span>
+          </div>
+          <p style="margin-top:10px;">
+            実際には、freeeから取り込んだ数字をもとに、日次・週次・月次のKPIを自動で更新します。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ② 悩み -->
+    <section>
+      <h2>こんな悩み、ありませんか？</h2>
+      <ul class="checklist">
+        <li>売上は毎日見ているけど、粗利や原価率は感覚でしか把握できていない。</li>
+        <li>月末に試算表が出てきて、「あ、今月こうだったのか」と初めてわかる。</li>
+        <li>仕入れが増えた月の原価率が、どのくらい利益に効いているかリアルタイムで見られない。</li>
+        <li>店舗が2つ、3つと増えてきて、どの店が黒字でどの店が怪しいのか、正直ぼんやりしてきた。</li>
+        <li>帳簿やレシート整理は後回しになりがちで、申告シーズンに慌てることが多い。</li>
+      </ul>
+    </section>
+
+    <!-- ③ なぜ数字管理がうまくいかないのか -->
+    <section>
+      <h2>なぜ「数字管理」がうまくいかないのか</h2>
+      <div class="two-col">
+        <div>
+          <p><strong>原因は「意識」ではなく、「仕組み」がないことです。</strong></p>
+          <p>
+            数字を見ようとしていないオーナーは、ほとんどいません。ただ、売上はレジアプリ、仕入れはExcelやノート、銀行はネットバンキング、カードは専用サイト…と数字がバラバラの場所に散らばっていると、「まとめる手間」が先に来てしまいます。
+          </p>
+          <p>
+            その結果、月末の試算表が出て初めて「今月はこうだったのか」と振り返る。これはスキルの問題ではなく、数字がそろう仕組みが整っていないことが原因です。
+          </p>
+        </div>
+        <div class="box-muted">
+          <p style="margin-top:0;">バラバラのままの状態</p>
+          <ul class="checklist">
+            <li>レジアプリ…日次売上</li>
+            <li>仕入れExcel…請求書の金額</li>
+            <li>銀行明細…振込・引き落とし</li>
+            <li>クレカ…カード払いの詳細</li>
+          </ul>
+          <p>これらを1つの場所に集める「ハブ」として置けるのが、会計ソフトfreeeです。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ④ freeeを土台にすると -->
+    <section>
+      <h2>freeeを土台にすると、何が変わるか</h2>
+      <p>freeeを導入すると、バラバラだった数字がひとつの場所にまとまりやすくなります。</p>
+      <div class="pill-list">
+        <div class="pill">銀行・カード明細を自動取り込みしやすい</div>
+        <div class="pill">レジや決済サービスと連携しやすい（一部設定が必要）</div>
+        <div class="pill">月末を待たずに、今月の数字の流れを把握しやすい</div>
+        <div class="pill">税理士・スタッフとのデータ共有がしやすい</div>
+      </div>
+      <div class="box-muted" style="margin-top:16px;">
+        <strong>ただし、freeeを入れたらすべて自動で解決するわけではありません。</strong><br>
+        あくまで「数字がそろう土台ができる」のが第一ステップです。そのうえで、飲食店向けのKPIダッシュボードにつなげていくことで、日次の粗利や原価率が見えるようになります。
+      </div>
+    </section>
+
+    <!-- ⑤ freee × KPIダッシュボード -->
+    <section>
+      <h2>freee × KPIダッシュボードで見えてくる数字</h2>
+      <p>freeeで数字の土台が整ったら、その先に飲食店向けKPIダッシュボードを組み合わせることができます。</p>
+      <table>
+        <thead>
+        <tr><th>指標</th><th>何のために見るか</th></tr>
+        </thead>
+        <tbody>
+        <tr><td>売上（日次・週次・月次）</td><td>前週比・前月比でトレンドを把握する</td></tr>
+        <tr><td>粗利・粗利率</td><td>売上が立っていても、利益が出ているかを確認する</td></tr>
+        <tr><td>原価率</td><td>仕入れコストが利益を圧迫していないかを見る</td></tr>
+        <tr><td>FL率</td><td>食材費＋人件費のバランスを見る基本指標</td></tr>
+        <tr><td>前週比・前年同週比</td><td>曜日・季節の波を読む</td></tr>
+        <tr><td>店舗別比較</td><td>どの店が好調か、どの店に課題があるかを一覧で見る</td></tr>
+        </tbody>
+      </table>
+      <p>
+        「この店、先週より原価率が3%上がっているな。何かあった？」という会話を、月末ではなく週の半ばにできるようにする。そのための“見える化”です。
+      </p>
+    </section>
+
+    <!-- ⑥ こういう方に -->
+    <section>
+      <h2>こういう方に向けて作りました</h2>
+      <ul class="checklist">
+        <li>居酒屋・焼鳥店・定食屋など、2〜5店舗を運営している多店舗オーナー</li>
+        <li>個店だけど、数字管理をもう少しラクにしたいと思っているオーナー</li>
+        <li>会計ソフトを使っていないか、「月1回しか開かない」状態の方</li>
+        <li>試算表は税理士任せだが、自分でも日々の数字を把握したい方</li>
+        <li>売上は見ているが、粗利・原価率は感覚で判断している方</li>
+      </ul>
+    </section>
+
+    <!-- ⑦ CTA -->
+    <section id="cta" class="cta-block">
+      <h2>次の一歩を選んでください</h2>
+      <p>freee未導入の方と、すでに導入済みの方でご案内が分かれます。</p>
+      <div style="display:flex; flex-direction:column; gap:10px; max-width:420px; margin:0 auto;">
+        <button class="btn-primary">
+          まず、数字がそろう環境を整えてみる（freeeの詳細を見る）
+        </button>
+        <button class="btn-secondary">
+          freee導入済みなので、KPIダッシュボードのテンプレを見たい
+        </button>
+      </div>
+      <p style="font-size:11px; color:var(--muted); margin-top:10px;">
+        ※freeeのリンクは公式サイトへのアフィリエイトリンクを予定しています。
+      </p>
+    </section>
+
+    <!-- ⑧ FAQ -->
+    <section>
+      <h2>よくあるご質問</h2>
+      <div class="faq-item">
+        <div class="faq-q">Q. freeeを入れたら、すぐに使えますか？</div>
+        <p>A. 初期設定（口座連携・勘定科目の確認など）に多少の時間はかかりますが、難しい会計知識がなくても進められる設計です。1〜2時間程度で基本設定は完了できます。</p>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q. 会計の知識がなくても大丈夫ですか？</div>
+        <p>A. 大丈夫です。freeeは専門家でなくても使える前提で設計されています。ただし、確定申告や決算については税理士への確認をおすすめします。</p>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q. 今使っているレジアプリやPOSと連携できますか？</div>
+        <p>A. Square・Airレジなど、飲食店でよく使われるサービスとの連携に対応しているものが多いです。詳しくはfreee公式サイトの連携一覧をご確認ください。</p>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q. 店舗が複数ある場合はどう管理しますか？</div>
+        <p>A. freeeの部門管理機能を使って店舗別に数字を追い、KPIダッシュボード側で店舗比較のビューを作る運用を想定しています。</p>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Q. KPIダッシュボードは、freeeを入れたら自動でできますか？</div>
+        <p>A. freeeだけで自動的に完成するわけではありません。freeeで数字の土台を整えたうえで、専用テンプレートを使ってダッシュボードを設定するステップが必要です。</p>
+      </div>
+    </section>
+
+    <!-- ⑨ クロージング -->
+    <section class="closing">
+      数字の管理がうまくいっていないのは、意識の問題ではなく、仕組みの問題であることがほとんどです。<br>
+      freeeで数字の土台を整え、その先で昨日の粗利と原価率を今日確認できる仕組みへ。<br>
+      まずは「数字がそろう環境」をつくるところから始めてみませんか。
+    </section>
+
+  </main>
+
+  <footer>
+    &copy; 飲食×freee KPIダッシュボード プロジェクト
+  </footer>
+
+</div>
+</body>
+</html>
