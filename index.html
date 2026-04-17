@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AccounTech Agent｜会計事務所向け 経理DX支援サービス</title>
+  <meta name="description" content="freee × Claude MCPで、記帳チェックを自動化。顧問先が何社あっても、1つのシステムで対応できます。AIで仕訳判断をせず、人の確認を残したまま、転記・整形・チェックの手間を減らします。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:    #1a2840;
+      --navy2:   #22344f;
+      --teal:    #028090;
+      --teal2:   #015f6b;
+      --teal-lt: #e6f4f6;
+      --mint:    #02c39a;
+      --gold:    #c8a84b;
+      --sand:    #f5f0e8;
+      --white:   #ffffff;
+      --gray:    #64748b;
+      --gray-lt: #f8f7f4;
+      --text:    #1e2d3d;
+      --text2:   #4b5563;
+      --red:     #ef4444;
+      --green:   #10b981;
+      --serif: 'Noto Serif JP', serif;
+      --sans:  'Noto Sans JP', sans-serif;
+      --max: 900px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--gray-lt);
+      color: var(--text);
+      line-height: 1.9;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── ANNOUNCE BAR ─── */
+    .announce {
+      background: var(--teal);
+      color: var(--white);
+      text-align: center;
+      padding: 10px 16px;
+      font-size: 13px;
+      letter-spacing: 0.03em;
+    }
+    .announce strong { color: #a8e6df; margin: 0 6px; }
+
+    /* ─── HEADER ─── */
+    header {
+      background: var(--navy);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+    }
+    .logo {
+      font-family: var(--serif);
+      font-size: 18px;
+      color: var(--white);
+      letter-spacing: 0.05em;
+    }
+    .logo span { color: var(--mint); }
+    .header-cta {
+      background: var(--teal);
+      color: var(--white);
+      padding: 9px 22px;
+      border-radius: 4px;
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .header-cta:hover { background: var(--teal2); }
+
+    /* ─── HERO ─── */
+    .hero {
+      background: var(--navy);
+      padding: 80px 24px 72px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(2,128,144,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-block;
+      background: rgba(2,195,154,0.15);
+      color: var(--mint);
+      border: 1px solid rgba(2,195,154,0.35);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      padding: 5px 16px;
+      border-radius: 2px;
+      margin-bottom: 28px;
+    }
+    .hero h1 {
+      font-family: var(--serif);
+      font-size: clamp(26px, 4vw, 40px);
+      color: var(--white);
+      line-height: 1.55;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--mint);
+    }
+    .hero-sub {
+      color: #94a3b8;
+      font-size: 15px;
+      max-width: 560px;
+      margin: 0 auto 36px;
+      line-height: 1.9;
+    }
+    .hero-cta-group {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: var(--teal);
+      color: var(--white);
+      padding: 14px 32px;
+      border-radius: 4px;
+      font-size: 15px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-block;
+    }
+    .btn-primary:hover { background: var(--teal2); transform: translateY(-1px); }
+    .btn-ghost {
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #cbd5e1;
+      padding: 13px 28px;
+      border-radius: 4px;
+      font-size: 14px;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+      display: inline-block;
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,0.55); color: var(--white); }
+
+    /* ─── SECTION BASE ─── */
+    section { padding: 72px 24px; }
+    .container { max-width: var(--max); margin: 0 auto; }
+    .section-label {
+      display: inline-block;
+      color: var(--teal);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: var(--serif);
+      font-size: clamp(22px, 3vw, 32px);
+      color: var(--navy);
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+    .section-lead {
+      color: var(--text2);
+      font-size: 15px;
+      max-width: 600px;
+      line-height: 1.9;
+      margin-bottom: 48px;
+    }
+
+    /* ─── PROBLEM ─── */
+    .problem { background: var(--white); }
+    .problem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .problem-card {
+      background: #fff8f8;
+      border: 1px solid #fde8e8;
+      border-left: 3px solid var(--red);
+      padding: 22px 20px;
+      border-radius: 6px;
+    }
+    .problem-card h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--red);
+      margin-bottom: 8px;
+    }
+    .problem-card p { font-size: 13.5px; color: var(--text2); line-height: 1.8; }
+
+    /* ─── SOLUTION / BEFORE-AFTER ─── */
+    .solution { background: var(--gray-lt); }
+    .ba-wrap {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    @media (max-width: 640px) {
+      .ba-wrap { grid-template-columns: 1fr; }
+      .ba-arrow { transform: rotate(90deg); }
+    }
+    .ba-card {
+      padding: 24px 20px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+    }
+    .ba-card.before {
+      background: #fff8f8;
+      border-color: #fecaca;
+    }
+    .ba-card.after {
+      background: #f0fdf4;
+      border-color: #a7f3d0;
+    }
+    .ba-tag {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 12px;
+    }
+    .ba-tag.before { background: var(--red); color: var(--white); }
+    .ba-tag.after  { background: var(--green); color: var(--white); }
+    .ba-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+    .ba-card ul { padding-left: 16px; font-size: 13.5px; color: var(--text2); }
+    .ba-card ul li { margin-bottom: 6px; }
+    .ba-card .highlight { font-weight: 700; font-size: 14px; margin-top: 12px; }
+    .ba-card.before .highlight { color: var(--red); }
+    .ba-card.after  .highlight { color: var(--green); }
+    .ba-arrow { text-align: center; font-size: 28px; color: var(--teal); }
+
+    .reduction-badge {
+      background: var(--teal-lt);
+      border: 1px solid var(--teal);
+      border-radius: 6px;
+      padding: 18px 24px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--teal2);
+      margin-top: 8px;
+    }
+    .reduction-badge span { font-size: 22px; color: var(--teal); margin: 0 6px; }
+
+    /* ─── HOW IT WORKS ─── */
+    .how { background: var(--white); }
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0;
+      position: relative;
+    }
+    .flow-step {
+      text-align: center;
+      padding: 28px 16px;
+      position: relative;
+    }
+    .flow-step:not(:last-child)::after {
+      content: '▶';
+      position: absolute;
+      right: -12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--teal);
+      font-size: 14px;
+      z-index: 1;
+    }
+    @media (max-width: 600px) {
+      .flow-steps { grid-template-columns: 1fr 1fr; }
+      .flow-step::after { display: none; }
+    }
+    .flow-num {
+      width: 38px;
+      height: 38px;
+      background: var(--teal);
+      color: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 auto 12px;
+    }
+    .flow-step h4 { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+    .flow-step p  { font-size: 12px; color: var(--gray); line-height: 1.7; }
+
+    .hil-box {
+      margin-top: 32px;
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 6px;
+      padding: 18px 20px;
+      font-size: 13.5px;
+      color: #92400e;
+    }
+    .hil-box strong { display: block; margin-bottom: 4px; font-size: 14px; }
+
+    /* ─── FEATURES (3点) ─── */
+    .features { background: var(--gray-lt); }
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+    .feat-card {
+      background: var(--white);
+      border: 1px solid #e2e8f0;
+      border-top: 3px solid var(--teal);
+      border-radius: 6px;
+      padding: 26px 22px;
+    }
+    .feat-card h3 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 10px; }
+    .feat-card p  { font-size: 13.5px; color: var(--text2); line-height: 1.85; }
+
+    /* ─── SOFTWARE ─── */
+    .software { background: var(--white); }
+    .sw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .sw-card {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 20px;
+    }
+    .sw-card.featured {
+      border-color: var(--teal);
+      border-left: 4px solid var(--teal);
+      background: var(--teal-lt);
+    }
+    .sw-card h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; color: var(--navy); }
+    .sw-card p  { font-size: 13px; color: var(--gray); }
+    .sw-badge {
+      display: inline-block;
+      background: var(--teal);
+      color: var(--white);
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 2px;
+      margin-bottom: 8px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── MULTI-CLIENT ─── */
+    .multi { background: var(--navy); padding: 72px 24px; }
+    .multi .section-title { color: var(--white); }
+    .multi .section-lead  { color: #94a3b8; }
+    .multi .section-label { color: var(--mint); }
+    .multi-diagram {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 32px 24px;
+      font-size: 14px;
+      color: #cbd5e1;
+      line-height: 2;
+    }
+    .multi-diagram .center-box {
+      display: inline-block;
+      background: var(--teal);
+      color: var(--white);
+      font-weight: 700;
+      padding: 8px 24px;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+    .multi-diagram .clients {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .multi-diagram .client-chip {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #e2e8f0;
+      font-size: 13px;
+      padding: 6px 14px;
+      border-radius: 4px;
+    }
+    .multi-point {
+      margin-top: 28px;
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 2;
+    }
+    .multi-point li { list-style: none; padding-left: 20px; position: relative; }
+    .multi-point li::before { content: '✓'; position: absolute; left: 0; color: var(--mint); font-weight: 700; }
+
+    /* ─── 3STEP ─── */
+    .steps { background: var(--white); }
+    .steps-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 700px) {
+      .steps-grid { grid-template-columns: 1fr; }
+      .step-arrow { transform: rotate(90deg); text-align: center; }
+    }
+    .step-card {
+      background: var(--gray-lt);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 24px 20px;
+      position: relative;
+    }
+    .step-card.featured {
+      background: var(--teal-lt);
+      border-color: var(--teal);
+    }
+    .step-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+    .step-icon { font-size: 28px; margin-bottom: 10px; }
+    .step-card h3 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 10px;
+    }
+    .step-card p {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.8;
+      margin-bottom: 14px;
+    }
+    .step-tag {
+      display: inline-block;
+      background: rgba(2,128,144,0.1);
+      color: var(--teal2);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 2px;
+    }
+    .step-tag.featured {
+      background: var(--teal);
+      color: var(--white);
+    }
+    .step-arrow {
+      font-size: 22px;
+      color: var(--teal);
+      text-align: center;
+      padding: 0 4px;
+    }
+    .steps-note {
+      background: #f8fafc;
+      border-left: 3px solid var(--teal);
+      padding: 16px 20px;
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.9;
+      border-radius: 0 4px 4px 0;
+    }
+
+    /* ─── SERVICES (比較表) ─── */
+    .services { background: var(--gray-lt); }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      background: var(--white);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .compare-table th {
+      background: var(--navy);
+      color: var(--white);
+      padding: 14px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .compare-table th.featured { background: var(--teal); }
+    .compare-table td {
+      padding: 13px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      color: var(--text2);
+      vertical-align: top;
+    }
+    .compare-table td:first-child { color: var(--navy); font-weight: 500; }
+    .compare-table td.featured { background: var(--teal-lt); }
+    .compare-table tr:last-child td { border-bottom: none; }
+    @media (max-width: 640px) {
+      .compare-table { font-size: 12px; }
+      .compare-table td, .compare-table th { padding: 10px 10px; }
+    }
+
+    /* ─── PLAN ─── */
+    .services { background: var(--gray-lt); }
+    .plan-wrap {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 640px) {
+      .plan-wrap { grid-template-columns: 1fr; }
+      .plan-plus { text-align: center; }
+    }
+    .plan-card {
+      background: var(--white);
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .plan-card.featured {
+      border-color: var(--teal);
+      box-shadow: 0 4px 20px rgba(2,128,144,0.12);
+    }
+    .plan-header {
+      padding: 24px 22px 16px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .plan-label {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--gray);
+      background: var(--gray-lt);
+      padding: 3px 10px;
+      border-radius: 2px;
+      margin-bottom: 10px;
+    }
+    .plan-label.featured {
+      background: var(--teal);
+      color: var(--white);
+    }
+    .plan-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    .plan-desc {
+      font-size: 13px;
+      color: var(--text2);
+      line-height: 1.8;
+    }
+    .plan-features {
+      padding: 18px 22px;
+      list-style: none;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .plan-features li {
+      font-size: 13.5px;
+      color: var(--text2);
+      padding: 5px 0 5px 20px;
+      position: relative;
+    }
+    .plan-features li::before {
+      content: '✓';
+      position: absolute;
+      left: 0;
+      color: var(--teal);
+      font-weight: 700;
+    }
+    .plan-price {
+      padding: 18px 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .price-label {
+      font-size: 11px;
+      color: var(--gray);
+      letter-spacing: 0.05em;
+    }
+    .price-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy);
+    }
+    .price-sub {
+      font-size: 12px;
+      color: var(--gray);
+    }
+    .plan-plus {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--teal);
+      text-align: center;
+      padding: 0 8px;
+    }
+    .plan-note {
+      background: #fffbeb;
+      border: 1px solid #fcd34d;
+      border-radius: 6px;
+      padding: 16px 20px;
+      font-size: 13.5px;
+      color: #92400e;
+      line-height: 1.8;
+    }
+    .plan-note strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ─── FAQ ─── */
+    .faq { background: var(--white); }
+    .faq-list { display: flex; flex-direction: column; gap: 12px; }
+    .faq-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .faq-q {
+      padding: 16px 20px;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--navy);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--white);
+      border: none;
+      width: 100%;
+      text-align: left;
+    }
+    .faq-q:hover { background: #f8fafc; }
+    .faq-q .icon { color: var(--teal); font-size: 18px; flex-shrink: 0; transition: transform 0.2s; }
+    .faq-a {
+      display: none;
+      padding: 14px 20px;
+      font-size: 13.5px;
+      color: var(--text2);
+      line-height: 1.9;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+    }
+    .faq-item.open .faq-a { display: block; }
+    .faq-item.open .icon { transform: rotate(45deg); }
+
+    /* ─── CTA ─── */
+    .cta-section {
+      background: var(--teal);
+      padding: 72px 24px;
+      text-align: center;
+    }
+    .cta-section h2 {
+      font-family: var(--serif);
+      font-size: clamp(22px, 3.5vw, 34px);
+      color: var(--white);
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .cta-section p {
+      color: rgba(255,255,255,0.8);
+      font-size: 15px;
+      margin-bottom: 32px;
+      line-height: 1.9;
+    }
+    .cta-note {
+      margin-top: 18px;
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+    }
+    .btn-cta-white {
+      background: var(--white);
+      color: var(--teal2);
+      padding: 15px 40px;
+      border-radius: 4px;
+      font-size: 16px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.2); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: var(--navy);
+      padding: 40px 24px;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: var(--serif);
+      font-size: 16px;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .footer-logo span { color: var(--mint); }
+    .footer-sub { font-size: 12px; color: #64748b; margin-bottom: 18px; }
+    .footer-links { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+    .footer-links a { font-size: 13px; color: #94a3b8; text-decoration: none; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-copy { margin-top: 24px; font-size: 12px; color: #475569; }
+
+    /* ─── DIVIDER ─── */
+    .divider { height: 1px; background: #e2e8f0; margin: 0 24px; }
+  </style>
+</head>
+<body>
+
+<!-- ANNOUNCE -->
+<div class="announce">
+  初期導入モニター受付中 ·
+  <strong>3社限定 · 初月無料</strong>
+  · freee会計をお使いの事務所が対象です
+</div>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">Accoun<span>Tech</span> Agent</div>
+  <a href="#contact" class="header-cta">無料相談を申し込む</a>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-eyebrow">会計事務所向け 経理DX支援</div>
+    <h1>
+      人を増やさずに、<br>
+      <em>顧問先を増やせる</em>仕組みをつくる
+    </h1>
+    <p class="hero-sub">
+      freee × Claude MCPで、記帳チェック・月次レポートを自動化。<br>
+      顧問先が何社あっても、1つのシステムで対応できます。
+    </p>
+    <div class="hero-cta-group">
+      <a href="#contact" class="btn-primary">無料相談を申し込む</a>
+      <a href="#services" class="btn-ghost">サービス内容を見る</a>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem">
+  <div class="container">
+    <div class="section-label">PROBLEM</div>
+    <h2 class="section-title">こんなことで時間を取られていませんか？</h2>
+    <p class="section-lead">会計事務所の月次業務は、仕訳チェックや資料整理など「手間がかかるわりに判断がいらない作業」が大量にあります。</p>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <h3>記帳チェックに時間がかかる</h3>
+        <p>顧問先から届いた仕訳データを1件ずつ目視確認。科目ミス・摘要空欄・消費税区分のズレを探す作業に毎月2〜3時間。</p>
+      </div>
+      <div class="problem-card">
+        <h3>月次レポートの作成が大変</h3>
+        <p>試算表データをもとに経営コメントを書く作業。顧問先が増えるほど時間が膨らむ。テンプレを使っても毎月手直しが発生する。</p>
+      </div>
+      <div class="problem-card">
+        <h3>顧問先が増やせない</h3>
+        <p>スタッフを増やさないと対応できない。でも採用は難しい。結果として「今の顧問先で手一杯」という状態が続く。</p>
+      </div>
+      <div class="problem-card">
+        <h3>ソフトがバラバラで管理が煩雑</h3>
+        <p>freee・マネーフォワード・弥生が混在している。顧問先ごとに操作が違うので、担当者でないと対応できない状況になっている。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SOLUTION -->
+<section class="solution">
+  <div class="container">
+    <div class="section-label">SOLUTION</div>
+    <h2 class="section-title">AccounTech Agentが解決できること</h2>
+    <p class="section-lead">freee × Claude MCPを接続することで、仕訳チェックと月次レポートの大部分をAIが担います。担当者は「確認と判断」だけに集中できます。</p>
+
+    <div class="ba-wrap">
+      <div class="ba-card before">
+        <span class="ba-tag before">BEFORE 導入前</span>
+        <h3>毎月の記帳チェック</h3>
+        <ul>
+          <li>仕訳を1件ずつ目視確認</li>
+          <li>科目ミスを手動で探す</li>
+          <li>摘要の空欄を目で追う</li>
+          <li>消費税区分を一行ずつ確認</li>
+        </ul>
+        <p class="highlight">毎月 2〜3時間 かかっていた</p>
+      </div>
+      <div class="ba-arrow">▶</div>
+      <div class="ba-card after">
+        <span class="ba-tag after">AFTER 導入後</span>
+        <h3>仕訳データを渡すだけ</h3>
+        <ul>
+          <li>科目ミスを自動検出</li>
+          <li>摘要の空欄を自動検知</li>
+          <li>消費税区分のズレも指摘</li>
+          <li>要確認リストだけ確認すればOK</li>
+        </ul>
+        <p class="highlight">確認時間が 30分以内 に短縮</p>
+      </div>
+    </div>
+    <div class="reduction-badge">
+      記帳チェックの作業時間を <span>最大 85%</span> 削減できます
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="how" id="how">
+  <div class="container">
+    <div class="section-label">HOW IT WORKS</div>
+    <h2 class="section-title">どうやって動くのか</h2>
+    <p class="section-lead">freeeとClaudeをつなぐだけ。複雑な設定は不要です。</p>
+
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-num">1</div>
+        <h4>freee MCPを接続</h4>
+        <p>URLを1つ登録してfreeeにログインするだけ</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">2</div>
+        <h4>プロンプトを設定</h4>
+        <p>用意されたテンプレをコピペして設定</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">3</div>
+        <h4>仕訳データを渡す</h4>
+        <p>freeeからエクスポートしたデータを貼り付け</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">4</div>
+        <h4>Claudeが問題を指摘</h4>
+        <p>科目・摘要・消費税区分を一括チェック</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-num">5</div>
+        <h4>担当者が確認・修正</h4>
+        <p>要確認リストだけ確認してfreeeに反映</p>
+      </div>
+    </div>
+
+    <div class="hil-box">
+      <strong>⚠ AIは「下案・指摘」のみです。freeeへの最終書き込みは必ず担当者が承認します。</strong>
+      AIは仕訳を自動で登録しません。「ここが怪しい」という指摘リストを出すだけです。最終判断は常に人間が行います。税理士法に配慮した設計です。
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="features">
+  <div class="container">
+    <div class="section-label">FEATURES</div>
+    <h2 class="section-title">このサービスの3つの特徴</h2>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <h3>✓ ノーコードで使える</h3>
+        <p>Claude.aiとfreeeを接続するだけです。プログラムの知識は不要。設定時間の目安は5〜10分。スタッフが自分で操作できます。</p>
+      </div>
+      <div class="feat-card">
+        <h3>✓ freee以外にも対応</h3>
+        <p>顧問先がマネーフォワードや弥生を使っていても大丈夫です。共通仕訳帳を経由してCSV変換で対応できます。ソフトを乗り換える必要はありません。</p>
+      </div>
+      <div class="feat-card">
+        <h3>✓ 複数顧問先を1システムで管理</h3>
+        <p>顧問先が増えてもシステムを作り直す必要はありません。管理シートに1行追加するだけで新しい顧問先に対応できます。50社になっても同じ仕組みで動きます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MULTI-CLIENT -->
+<section class="multi">
+  <div class="container">
+    <div class="section-label">SCALABILITY</div>
+    <h2 class="section-title">1つのシステムで<br>複数の顧問先を管理する</h2>
+    <p class="section-lead">よくある失敗は「顧問先ごとに別々のシステムを作ること」。AccounTech Agentは最初から横展開できる設計になっています。</p>
+
+    <div class="multi-diagram">
+      <div style="text-align:center; margin-bottom:16px;">
+        <div style="color:#94a3b8; font-size:13px; margin-bottom:8px;">会計事務所（1事務所）</div>
+        <div class="center-box">AccounTech Agent</div>
+        <div style="color:#64748b; font-size:13px; margin-top:8px;">↓ スプレッドシートの設定を読み込む</div>
+      </div>
+      <div class="clients">
+        <div class="client-chip">顧問先A社 / freee / 飲食</div>
+        <div class="client-chip">顧問先B社 / MF / 小売</div>
+        <div class="client-chip">顧問先C社 / 弥生 / サービス</div>
+        <div class="client-chip">顧問先D社 / freee / 飲食</div>
+        <div class="client-chip">+ 新規顧問先は1行追加するだけ</div>
+      </div>
+    </div>
+
+    <ul class="multi-point" style="margin-top:28px;">
+      <li>顧問先ごとの設定はスプレッドシートで一元管理</li>
+      <li>新しい顧問先が増えても、シートに1行追加するだけ</li>
+      <li>freee・マネーフォワード・弥生が混在していても対応可能</li>
+      <li>処理ロジックは共通なので、管理コストが増えない</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 3STEP -->
+<section class="steps" id="steps">
+  <div class="container">
+    <div class="section-label">HOW TO START</div>
+    <h2 class="section-title">段階的に始められます</h2>
+    <p class="section-lead">いきなり全部導入する必要はありません。まず事務所内で試して、効果を確認してから顧問先へ展開できます。</p>
+
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">Step 1</div>
+        <div class="step-icon">🏢</div>
+        <h3>まず事務所内で試す</h3>
+        <p>先生またはスタッフが実際に使ってみます。記帳チェックの時間がどれだけ変わるか、まず体感してください。</p>
+        <div class="step-tag">初月無料・設定サポート付き</div>
+      </div>
+      <div class="step-arrow">▶</div>
+      <div class="step-card">
+        <div class="step-num">Step 2</div>
+        <div class="step-icon">👥</div>
+        <h3>顧問先への付加価値サービスを追加</h3>
+        <p>事務所の業務が効率化されたら、次は顧問先へのサービスを強化できます。お金の見える化ダッシュボード・月次経営レポートの自動生成・補助金の自動提案など、顧問料に上乗せできる付加価値を提供できます。</p>
+        <div class="step-tag">顧問先への説明資料・覚書テンプレ付き</div>
+      </div>
+      <div class="step-arrow">▶</div>
+      <div class="step-card featured">
+        <div class="step-num">Step 3</div>
+        <div class="step-icon">📈</div>
+        <h3>複数顧問先へ展開・収益を積み上げる</h3>
+        <p>1つのシステムで複数の顧問先に付加価値サービスを提供できます。顧問先が増えても管理コストは変わらず、事務所の収益が積み上がっていきます。</p>
+        <div class="step-tag featured">スプレッドシートに1行追加するだけで新顧問先に対応</div>
+      </div>
+    </div>
+
+    <div class="steps-note">
+      Step 1から始めて、Step 3まで進む必要はありません。Step 1だけでも十分な効果があります。<br>
+      顧問先への展開は、先生が「これは使える」と感じたタイミングで検討していただければ十分です。
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="container">
+    <div class="section-label">SERVICES</div>
+    <h2 class="section-title">1つのシステムで、全部対応します</h2>
+    <p class="section-lead">プランを選ぶのではありません。1つのシステムにfreeeオプションを追加する形です。顧問先ごとに自動で振り分けるので、事務所側での切り替えは不要です。</p>
+
+    <div class="plan-wrap">
+
+      <!-- ベーシックプラン -->
+      <div class="plan-card">
+        <div class="plan-header">
+          <div class="plan-label">全事務所対象</div>
+          <h3 class="plan-name">ベーシックプラン</h3>
+          <p class="plan-desc">freee・MF・弥生が混在していても、1つのシステムで全顧問先に対応できます。</p>
+        </div>
+        <ul class="plan-features">
+          <li>レシートOCR → freee自動登録（丸投げ対応）</li>
+          <li>POSデータ・勤怠データの取込</li>
+          <li>共通仕訳帳への集約・整理</li>
+          <li>freee・MF・弥生向けCSV変換</li>
+          <li>顧問先マスタで一元管理</li>
+          <li>月次保守サポート</li>
+        </ul>
+        <div class="plan-price">
+          <span class="price-label">初期費用</span>
+          <span class="price-value">5〜8万円</span>
+          <span class="price-sub">月次保守 2〜3万円／事務所</span>
+        </div>
+      </div>
+
+      <!-- プラス記号 -->
+      <div class="plan-plus">＋</div>
+
+      <!-- freeeオプション -->
+      <div class="plan-card featured">
+        <div class="plan-header">
+          <div class="plan-label featured">freee顧問先に追加</div>
+          <h3 class="plan-name">freeeオプション</h3>
+          <p class="plan-desc">freeeをお使いの顧問先だけに、より深い自動化を追加できます。Claudeに話しかけるだけでfreeeの操作ができます。</p>
+        </div>
+        <ul class="plan-features">
+          <li>仕訳チェック自動化（科目・摘要・消費税）</li>
+          <li>試算表の取得・前月比分析</li>
+          <li>月次レポート・KPIレポート自動生成</li>
+          <li>請求書の作成・未回収一覧確認</li>
+          <li>給与データの仕訳自動連携</li>
+          <li>勤怠データの確認・処理</li>
+          <li>お金の見える化ダッシュボード</li>
+          <li>日次サマリーのSlack自動通知</li>
+          <li>異常値の自動検知・アラート</li>
+        </ul>
+        <div class="plan-price">
+          <span class="price-label">追加初期費用</span>
+          <span class="price-value">3〜7万円</span>
+          <span class="price-sub">月次保守 合計3〜5万円／事務所</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="plan-note">
+      <strong>⚠ AIは「下案・指摘」のみです。</strong>
+      freeeへの最終書き込みは必ず担当者が承認します。税理士法に配慮した設計です。
+    </div>
+
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FAQ -->
+<section class="faq" id="faq">
+  <div class="container">
+    <div class="section-label">FAQ</div>
+    <h2 class="section-title">よくあるご質問</h2>
+    <p class="section-lead">導入前に気になる点をまとめました。</p>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          AIが自動で仕訳を登録するのですか？
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          いいえ。AIは「問題のある可能性がある箇所」を指摘するだけです。freeeへの実際の書き込みは、担当者が内容を確認してから行います。「AIに任せっきり」にはならない設計です。税理士法に配慮した運用を前提としています。
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          freee以外のソフトを使っている顧問先にも対応できますか？
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          対応できます。マネーフォワード・弥生をお使いの顧問先には、共通仕訳帳を経由したCSV変換で対応します。顧問先にソフトを乗り換えてもらう必要はありません。
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          顧問先が増えたとき、都度システムを作り直す必要がありますか？
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          不要です。顧問先の情報はスプレッドシートで一元管理されており、新しい顧問先が増えてもシートに1行追加するだけで対応できます。50社になっても同じシステムで動作します。
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          顧客データのセキュリティは大丈夫ですか？
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          freee MCPはfreeeが公式に提供しているサービスです。通常のfreeeログインと同じセキュリティ基準で動作します。また、AIに渡すデータは必要最小限に絞る設計になっており、顧問先への説明用の覚書テンプレートもご用意しています。
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          スタッフのITリテラシーが高くなくても使えますか？
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          はい。Claude.aiはブラウザ上で動作し、操作はほぼチャット入力だけです。「freeeにログインできる」レベルであれば問題なく使えます。導入時にスタッフ向けの操作マニュアルをお渡しします。
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          導入後のサポートはありますか？
+          <span class="icon">+</span>
+        </button>
+        <div class="faq-a">
+          月次保守のプランでは、チャットによる運用サポートを含みます。freeeやClaudeのアップデートへの対応、辞書・設定の更新、エラー発生時の対応などを継続的に行います。
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="container">
+    <h2>まず、30分の無料相談から始めませんか</h2>
+    <p>
+      「うちの事務所に合うか確認したい」<br>
+      「どこから始めればいいかわからない」<br>
+      そんな方はお気軽にご連絡ください。売り込みは一切しません。
+    </p>
+    <a href="mailto:contact@example.com" class="btn-cta-white">無料相談を申し込む</a>
+    <p class="cta-note">
+      現在、初期導入モニターを3社限定で受付中です。<br>
+      freee会計をお使いの事務所が対象 · 初月無料 · 設定サポート付き
+    </p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Accoun<span>Tech</span> Agent Lab</div>
+  <p class="footer-sub">経理・バックオフィス実務8年 × AI自動化｜まーりん（京都）</p>
+  <div class="footer-links">
+    <a href="#how">仕組みを見る</a>
+    <a href="#services">サービス比較</a>
+    <a href="#faq">よくある質問</a>
+    <a href="#contact">無料相談</a>
+  </div>
+  <p class="footer-copy">© 2026 AccounTech Agent Lab</p>
+</footer>
+
+<script>
+function toggleFaq(btn) {
+  const item = btn.closest('.faq-item');
+  item.classList.toggle('open');
+}
+</script>
+
+</body>
+</html>
